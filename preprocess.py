@@ -54,10 +54,10 @@ def process_conll_corpus(corpus_path: str, output_path: str='.', replacements: O
     _create_dataset(list(map(lambda x: process_conll_file(x, replacements), files_test)), os.path.join(output_path, 'data_test.pkl'))
 
 def fix_bio_encoding(tags):
+    if tags[0].startswith('I-'):
+        tags[0] = tags[0].replace('I-', 'B-')
     for i in range(1, len(tags)):
-        if tags[0].startswith('I-'):
-            tags[0] = tags[0].replace('I-', 'B-')
-        elif tags[i-1] == 'O' and tags[i].startswith('I-'):
+        if tags[i-1] == 'O' and tags[i].startswith('I-'):
             tags[i] = tags[i].replace('I-', 'B-')
     return tags
 
@@ -75,3 +75,4 @@ def convert_sec_corpus(corpus_path: str, output_path: str='sec'):
     update_tags(os.path.join(output_path, 'data_test.pkl'))
     convert_data(os.path.join(output_path, 'data_train.pkl'), os.path.join(output_path, 'data_train.txt'))
     convert_data(os.path.join(output_path, 'data_test.pkl'), os.path.join(output_path, 'data_test.txt'))
+
