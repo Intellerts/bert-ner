@@ -16,13 +16,13 @@ corpus = ColumnCorpus(OUTPUT_PATH, columns, train_file = 'onto_train.txt',
                       test_file = 'onto_test.txt', dev_file = 'onto_valid.txt')
 tag_dictionary = corpus.make_tag_dictionary(tag_type='ner')
 tagger_config = [
-    { 'name': 'finbert-ner',
+    { 'name': 'finbert-char-ner',
       'embeddings': StackedEmbeddings([
             TransformerWordEmbeddings(BERT_MODEL_DIR, cache_dir=CACHE_DIR),
             CharacterEmbeddings()
         ])
     },
-    { 'name': 'finbert',
+    { 'name': 'finbert-ner',
       'embeddings': TransformerWordEmbeddings(BERT_MODEL_DIR, cache_dir=CACHE_DIR)
     }
 ]
