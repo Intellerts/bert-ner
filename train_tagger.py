@@ -29,4 +29,4 @@ tagger_config = [
 for config in tagger_config:
     tagger = SequenceTagger(hidden_size=256, embeddings=config['embeddings'], tag_dictionary=tag_dictionary, tag_type='ner', use_crf=True)
     trainer = ModelTrainer(tagger, corpus)
-    trainer.train(config['name'], learning_rate=0.1, mini_batch_size=32, max_epochs=50)
+    trainer.train(config['name'], learning_rate=0.1, mini_batch_size=32, max_epochs=100, embeddings_storage_mode='gpu')
