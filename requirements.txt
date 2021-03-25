@@ -1,0 +1,3 @@
+flair
+torch
+nltk
