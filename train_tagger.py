@@ -2,7 +2,8 @@ import os
 import pickle
 import torch
 from flair.datasets.sequence_labeling import ColumnCorpus
-from flair.embeddings import TransformerWordEmbeddings, CharacterEmbeddings, StackedEmbeddings
+from flair.embeddings import (TransformerWordEmbeddings, CharacterEmbeddings, StackedEmbeddings,
+                              FlairEmbeddings, WordEmbeddings, RoBERTaEmbeddings)
 from flair.models import SequenceTagger
 from flair.trainers import ModelTrainer
 
@@ -16,15 +17,34 @@ corpus = ColumnCorpus(OUTPUT_PATH, columns, train_file = 'onto_train.txt',
                       test_file = 'onto_test.txt', dev_file = 'onto_valid.txt')
 tag_dictionary = corpus.make_tag_dictionary(tag_type='ner')
 tagger_config = [
-    { 'name': 'finbert-char-ner',
+    # { 'name': 'finbert-char-ner',
+    #   'embeddings': StackedEmbeddings([
+    #         TransformerWordEmbeddings(BERT_MODEL_DIR, cache_dir=CACHE_DIR),
+    #         CharacterEmbeddings()
+    #     ])
+    # },
+    # { 'name': 'finbert-ner',
+    #   'embeddings': TransformerWordEmbeddings(BERT_MODEL_DIR, cache_dir=CACHE_DIR)
+    # },
+    { 'name': 'finbert-flair-ner',
       'embeddings': StackedEmbeddings([
-            TransformerWordEmbeddings(BERT_MODEL_DIR, cache_dir=CACHE_DIR),
-            CharacterEmbeddings()
+          TransformerWordEmbeddings(BERT_MODEL_DIR, cache_dir=CACHE_DIR),
+          FlairEmbeddings('mix-forward'),
+          FlairEmbeddings('mix-backward'),
         ])
     },
-    { 'name': 'finbert-ner',
-      'embeddings': TransformerWordEmbeddings(BERT_MODEL_DIR, cache_dir=CACHE_DIR)
-    }
+    { 'name': 'finbert-glove-ner',
+      'embeddings': StackedEmbeddings([
+          TransformerWordEmbeddings(BERT_MODEL_DIR, cache_dir=CACHE_DIR),
+          WordEmbeddings('glove')
+        ])
+    },
+    { 'name': 'finbert-roberta-ner',
+      'embeddings': StackedEmbeddings([
+          TransformerWordEmbeddings(BERT_MODEL_DIR, cache_dir=CACHE_DIR),
+          RoBERTaEmbeddings('roberta-large')
+      ])
+    },
 ]
 for config in tagger_config:
     tagger = SequenceTagger(hidden_size=256, embeddings=config['embeddings'], tag_dictionary=tag_dictionary, tag_type='ner', use_crf=True)
