@@ -26,6 +26,12 @@ tagger_config = [
     # { 'name': 'finbert-ner',
     #   'embeddings': TransformerWordEmbeddings(BERT_MODEL_DIR, cache_dir=CACHE_DIR)
     # },
+    { 'name': 'flair-ner',
+      'embeddings': StackedEmbeddings([
+          FlairEmbeddings('mix-forward'),
+          FlairEmbeddings('mix-backward'),
+        ])
+    },
     { 'name': 'finbert-flair-ner',
       'embeddings': StackedEmbeddings([
           TransformerWordEmbeddings(BERT_MODEL_DIR, cache_dir=CACHE_DIR),
