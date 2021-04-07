@@ -3,7 +3,8 @@ import pickle
 import torch
 from flair.datasets.sequence_labeling import ColumnCorpus
 from flair.embeddings import (TransformerWordEmbeddings, CharacterEmbeddings, StackedEmbeddings,
-                              FlairEmbeddings, WordEmbeddings, RoBERTaEmbeddings)
+                              FlairEmbeddings, WordEmbeddings, RoBERTaEmbeddings, ELMoEmbeddings,
+                              XLNetEmbeddings, XLMRobertaEmbeddings)
 from flair.models import SequenceTagger
 from flair.trainers import ModelTrainer
 
@@ -17,15 +18,15 @@ corpus = ColumnCorpus(OUTPUT_PATH, columns, train_file = 'onto_train.txt',
                       test_file = 'onto_test.txt', dev_file = 'onto_valid.txt')
 tag_dictionary = corpus.make_tag_dictionary(tag_type='ner')
 tagger_config = [
-    # { 'name': 'finbert-char-ner',
-    #   'embeddings': StackedEmbeddings([
-    #         TransformerWordEmbeddings(BERT_MODEL_DIR, cache_dir=CACHE_DIR),
-    #         CharacterEmbeddings()
-    #     ])
-    # },
-    # { 'name': 'finbert-ner',
-    #   'embeddings': TransformerWordEmbeddings(BERT_MODEL_DIR, cache_dir=CACHE_DIR)
-    # },
+    { 'name': 'finbert-char-ner',
+      'embeddings': StackedEmbeddings([
+            TransformerWordEmbeddings(BERT_MODEL_DIR, cache_dir=CACHE_DIR),
+            CharacterEmbeddings()
+        ])
+    },
+    { 'name': 'finbert-ner',
+      'embeddings': TransformerWordEmbeddings(BERT_MODEL_DIR, cache_dir=CACHE_DIR)
+    },
     { 'name': 'flair-ner',
       'embeddings': StackedEmbeddings([
           FlairEmbeddings('mix-forward'),
@@ -50,6 +51,18 @@ tagger_config = [
           TransformerWordEmbeddings(BERT_MODEL_DIR, cache_dir=CACHE_DIR),
           RoBERTaEmbeddings('roberta-large')
       ])
+    },
+    { 'name': 'elmo-ner',
+      'embeddings': ELMoEmbeddings()
+    },
+    { 'name': 'roberta-ner',
+      'embeddings': RoBERTaEmbeddings('roberta-large')
+    },
+    { 'name': 'xlnet-ner',
+      'embeddings': XLNetEmbeddings()
+    },
+    { 'name': 'xlm-roberta-ner',
+      'embeddings': XLMRobertaEmbeddings()
     },
 ]
 for config in tagger_config:
