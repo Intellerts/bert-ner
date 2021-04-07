@@ -1,0 +1,18 @@
+#!/bin/bash
+
+echo -e "Model\tStarted\tEnded\tF1-Micro\F1" > summary.txt
+echo -e "MODEL\tEPOCH\tTIMESTAMP\tBAD_EPOCHS\tLEARNING_RATE\tTRAIN_LOSS\tDEV_LOSS\tDEV_PRECISION\tDEV_RECALL\tDEV_F1" > loss.txt
+>perf.txt
+for dir in $(ls -d *-ner)
+do
+    logf=$dir/training.log
+    started=$(cat $logf | head -n 1 |  cut -f1,2 -d' ')
+    ended=$(cat $logf | tail -n 1 |  cut -f1,2 -d' ')
+    f1txt=$(cat $logf | grep "F1-score ") 
+    f1_micro=$(echo $f1txt | grep "F1-score (micro)" | tr ' ' '\n' | tail -n 1)
+    f1_macro=$(echo $f1txt | grep "F1-score (macro)" | tr ' ' '\n' | tail -n 1)
+    echo -e "$dir\t$started\t$ended\t$f1_micro\t$f1_macro" >> summary.txt
+    cat $logf | grep 'tp:' | sed "s/^/$dir\t/" >> perf.txt 
+    cat $dir/loss.tsv | head -n -1 | sed "s/^/$dir\t/" >> loss.txt
+done
+sed -i 's/ \{2,\}/\t/g' perf.txt
