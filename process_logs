@@ -12,7 +12,7 @@ do
     f1_micro=$(echo $f1txt | grep "F1-score (micro)" | tr ' ' '\n' | tail -n 1)
     f1_macro=$(echo $f1txt | grep "F1-score (macro)" | tr ' ' '\n' | tail -n 1)
     echo -e "$dir\t$started\t$ended\t$f1_micro\t$f1_macro" >> summary.txt
-    cat $logf | grep 'tp:' | sed "s/^/$dir\t/" >> perf.txt 
+    cat $logf | grep 'tp:' | sed -e "s/^/$dir\t/" -e "s/WORK_OF_ART /WORK_OF_ART\t/" >> perf.txt
     cat $dir/loss.tsv | head -n -1 | sed "s/^/$dir\t/" >> loss.txt
 done
 sed -i 's/ \{2,\}/\t/g' perf.txt
