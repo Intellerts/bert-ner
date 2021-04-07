@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo -e "Model\tStarted\tEnded\tF1-Micro\F1" > summary.txt
+echo -e "Model\tStarted\tEnded\tF1-Micro\tF1-Macro" > summary.txt
 echo -e "MODEL\tEPOCH\tTIMESTAMP\tBAD_EPOCHS\tLEARNING_RATE\tTRAIN_LOSS\tDEV_LOSS\tDEV_PRECISION\tDEV_RECALL\tDEV_F1" > loss.txt
 >perf.txt
 for dir in $(ls -d *-ner)
