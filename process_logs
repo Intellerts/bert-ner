@@ -14,5 +14,6 @@ do
     echo -e "$dir\t$started\t$ended\t$f1_micro\t$f1_macro" >> summary.txt
     cat $logf | grep 'tp:' | sed -e "s/^/$dir\t/" -e "s/WORK_OF_ART /WORK_OF_ART\t/" >> perf.txt
     cat $dir/loss.tsv | tail -n +2 | sed "s/^/$dir\t/" >> loss.txt
+    echo -e "\r" >> loss.txt
 done
 sed -i 's/ \{2,\}/\t/g' perf.txt
