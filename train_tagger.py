@@ -33,25 +33,6 @@ tagger_config = [
           FlairEmbeddings('mix-backward'),
         ])
     },
-    { 'name': 'finbert-flair-ner',
-      'embeddings': StackedEmbeddings([
-          TransformerWordEmbeddings(BERT_MODEL_DIR, cache_dir=CACHE_DIR),
-          FlairEmbeddings('mix-forward'),
-          FlairEmbeddings('mix-backward'),
-        ])
-    },
-    { 'name': 'finbert-glove-ner',
-      'embeddings': StackedEmbeddings([
-          TransformerWordEmbeddings(BERT_MODEL_DIR, cache_dir=CACHE_DIR),
-          WordEmbeddings('glove')
-        ])
-    },
-    { 'name': 'finbert-roberta-ner',
-      'embeddings': StackedEmbeddings([
-          TransformerWordEmbeddings(BERT_MODEL_DIR, cache_dir=CACHE_DIR),
-          RoBERTaEmbeddings('roberta-large')
-      ])
-    },
     { 'name': 'elmo-ner',
       'embeddings': ELMoEmbeddings()
     },
