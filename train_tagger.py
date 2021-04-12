@@ -1,6 +1,5 @@
 import argparse
 import torch
-from flair.data import Subset, Dataset
 from flair.datasets.sequence_labeling import ColumnCorpus
 from flair.embeddings import (TransformerWordEmbeddings, CharacterEmbeddings, StackedEmbeddings,
                               FlairEmbeddings, WordEmbeddings, ELMoEmbeddings)
@@ -51,11 +50,7 @@ tagger_config = [
 
 def filter_long(dataset):
     # Bug in Flair: skip very long sentences to avoid errors!
-    if isinstance(dataset, Subset):
-        return [x for x in dataset.dataset if len(x) <= MAX_LENGTH]
-    elif isinstance(dataset, Dataset):
-        return [x for x in dataset if len(x) <= MAX_LENGTH]
-    return None
+    return [x for x in dataset if len(x) <= MAX_LENGTH]
 
 def train_tagger(input_path, train_file, test_file, dev_file):
     columns = {0 : 'text', 1 : 'ner'}
