@@ -1,5 +1,4 @@
-import os
-import pickle
+import argparse
 import torch
 from flair.datasets.sequence_labeling import ColumnCorpus
 from flair.embeddings import (TransformerWordEmbeddings, CharacterEmbeddings, StackedEmbeddings,
@@ -10,13 +9,9 @@ from flair.trainers import ModelTrainer
 
 BERT_MODEL_DIR = 'FinBERT-FinVocab-Uncased'
 CACHE_DIR = 'embeddings'
-OUTPUT_PATH = 'ontonotes'
+INPUT_PATH = 'ontonotes'
 torch.set_default_tensor_type(torch.FloatTensor)
 
-columns = {0 : 'text', 1 : 'ner'}
-corpus = ColumnCorpus(OUTPUT_PATH, columns, train_file = 'onto_train.txt',
-                      test_file = 'onto_test.txt', dev_file = 'onto_valid.txt')
-tag_dictionary = corpus.make_tag_dictionary(tag_type='ner')
 tagger_config = [
     { 'name': 'finbert-char-ner',
       'embeddings': StackedEmbeddings([
@@ -33,6 +28,12 @@ tagger_config = [
           FlairEmbeddings('mix-backward'),
         ])
     },
+    { 'name': 'glove-char-ner',
+      'embeddings': StackedEmbeddings([
+          TransformerWordEmbeddings(BERT_MODEL_DIR, cache_dir=CACHE_DIR),
+          WordEmbeddings('glove')
+        ])
+    },
     { 'name': 'elmo-ner',
       'embeddings': ELMoEmbeddings()
     },
@@ -46,7 +47,22 @@ tagger_config = [
       'embeddings': XLMRobertaEmbeddings()
     },
 ]
-for config in tagger_config:
-    tagger = SequenceTagger(hidden_size=256, embeddings=config['embeddings'], tag_dictionary=tag_dictionary, tag_type='ner', use_crf=True)
-    trainer = ModelTrainer(tagger, corpus)
-    trainer.train(config['name'], learning_rate=0.1, mini_batch_size=32, max_epochs=100, embeddings_storage_mode='gpu')
+
+def train_tagger(output_path, train_file, test_file, dev_file):
+    columns = {0 : 'text', 1 : 'ner'}
+    corpus = ColumnCorpus(output_path, columns, train_file=train_file, test_file=test_file, dev_file=dev_file)
+    tag_dictionary = corpus.make_tag_dictionary(tag_type='ner')
+    for config in tagger_config:
+        tagger = SequenceTagger(hidden_size=256, embeddings=config['embeddings'], tag_dictionary=tag_dictionary, tag_type='ner', use_crf=True)
+        trainer = ModelTrainer(tagger, corpus, use_tensorboard=True)
+        trainer.train(config['name'], learning_rate=0.1, mini_batch_size=32, max_epochs=100, embeddings_storage_mode='gpu')
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input-path", help="Input path", default=INPUT_PATH)
+    parser.add_argument("--train-file", help="Training file", default='onto_train.txt')
+    parser.add_argument("--test-file", help="Testing file", default='onto_test.txt')
+    parser.add_argument("--dev-file", help="Development file", default=None)
+    args = parser.parse_args()
+    train_tagger(args.input_path, args.train_file, args.test_file, args.dev_file)
