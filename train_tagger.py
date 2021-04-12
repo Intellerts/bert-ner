@@ -51,6 +51,7 @@ tagger_config = [
 def train_tagger(output_path, train_file, test_file, dev_file):
     columns = {0 : 'text', 1 : 'ner'}
     corpus = ColumnCorpus(output_path, columns, train_file=train_file, test_file=test_file, dev_file=dev_file)
+    corpus._test = [x for x in corpus.test if len(x) > 512]  # Bug in Flair: skip very long sentences to avoid errors!
     tag_dictionary = corpus.make_tag_dictionary(tag_type='ner')
     for config in tagger_config:
         tagger = SequenceTagger(hidden_size=256, embeddings=config['embeddings'], tag_dictionary=tag_dictionary, tag_type='ner', use_crf=True)
