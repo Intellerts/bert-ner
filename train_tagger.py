@@ -1,26 +1,27 @@
 import argparse
 import torch
+from flair.data import Subset, Dataset
 from flair.datasets.sequence_labeling import ColumnCorpus
 from flair.embeddings import (TransformerWordEmbeddings, CharacterEmbeddings, StackedEmbeddings,
-                              FlairEmbeddings, WordEmbeddings, RoBERTaEmbeddings, ELMoEmbeddings,
-                              XLNetEmbeddings, XLMRobertaEmbeddings)
+                              FlairEmbeddings, WordEmbeddings, ELMoEmbeddings)
 from flair.models import SequenceTagger
 from flair.trainers import ModelTrainer
 
 BERT_MODEL_DIR = 'FinBERT-FinVocab-Uncased'
 CACHE_DIR = 'embeddings'
 INPUT_PATH = 'ontonotes'
+MAX_LENGTH = 512
 torch.set_default_tensor_type(torch.FloatTensor)
 
 tagger_config = [
     { 'name': 'finbert-char-ner',
       'embeddings': StackedEmbeddings([
-            TransformerWordEmbeddings(BERT_MODEL_DIR, cache_dir=CACHE_DIR),
+            TransformerWordEmbeddings(BERT_MODEL_DIR, cache_dir=CACHE_DIR, allow_long_sentences=False),
             CharacterEmbeddings()
         ])
     },
     { 'name': 'finbert-ner',
-      'embeddings': TransformerWordEmbeddings(BERT_MODEL_DIR, cache_dir=CACHE_DIR)
+      'embeddings': TransformerWordEmbeddings(BERT_MODEL_DIR, cache_dir=CACHE_DIR, allow_long_sentences=False)
     },
     { 'name': 'flair-ner',
       'embeddings': StackedEmbeddings([
@@ -30,7 +31,7 @@ tagger_config = [
     },
     { 'name': 'glove-char-ner',
       'embeddings': StackedEmbeddings([
-          TransformerWordEmbeddings(BERT_MODEL_DIR, cache_dir=CACHE_DIR),
+          TransformerWordEmbeddings(BERT_MODEL_DIR, cache_dir=CACHE_DIR, allow_long_sentences=False),
           WordEmbeddings('glove')
         ])
     },
@@ -38,20 +39,30 @@ tagger_config = [
       'embeddings': ELMoEmbeddings()
     },
     { 'name': 'roberta-ner',
-      'embeddings': RoBERTaEmbeddings('roberta-large')
+      'embeddings': TransformerWordEmbeddings('roberta-large', cache_dir=CACHE_DIR, allow_long_sentences=False)
     },
     { 'name': 'xlnet-ner',
-      'embeddings': XLNetEmbeddings()
+      'embeddings': TransformerWordEmbeddings("xlnet-large-cased", cache_dir=CACHE_DIR, allow_long_sentences=False)
     },
     { 'name': 'xlm-roberta-ner',
-      'embeddings': XLMRobertaEmbeddings()
+      'embeddings': TransformerWordEmbeddings('xlm-roberta-large', cache_dir=CACHE_DIR, allow_long_sentences=False)
     },
 ]
 
-def train_tagger(output_path, train_file, test_file, dev_file):
+def filter_long(dataset):
+    # Bug in Flair: skip very long sentences to avoid errors!
+    if isinstance(dataset, Subset):
+        return [x for x in dataset.dataset if len(x) <= MAX_LENGTH]
+    elif isinstance(dataset, Dataset):
+        return [x for x in dataset if len(x) <= MAX_LENGTH]
+    return None
+
+def train_tagger(input_path, train_file, test_file, dev_file):
     columns = {0 : 'text', 1 : 'ner'}
-    corpus = ColumnCorpus(output_path, columns, train_file=train_file, test_file=test_file, dev_file=dev_file)
-    corpus._test = [x for x in corpus.test if len(x) > 512]  # Bug in Flair: skip very long sentences to avoid errors!
+    corpus = ColumnCorpus(input_path, columns, train_file=train_file, test_file=test_file, dev_file=dev_file)
+    corpus._train = filter_long(corpus.train)
+    corpus._dev = filter_long(corpus.dev)
+    corpus._test = filter_long(corpus.test)
     tag_dictionary = corpus.make_tag_dictionary(tag_type='ner')
     for config in tagger_config:
         tagger = SequenceTagger(hidden_size=256, embeddings=config['embeddings'], tag_dictionary=tag_dictionary, tag_type='ner', use_crf=True)
