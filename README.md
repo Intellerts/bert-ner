@@ -1,2 +1,2 @@
-# FinBERT-NER
-Named entity recognition (NER) model for [Flair](https://github.com/flairNLP/flair) trained on OntoNotes 5.0 and SEC text corporas
+# BERT-BiLSTM-CRF-NER
+Benchmarking code for Named entity recognition (NER) models based on [Flair](https://github.com/flairNLP/flair) implementation. Trained using OntoNotes 5.0 and SEC text corporas
