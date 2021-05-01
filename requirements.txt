@@ -3,3 +3,5 @@ torch
 nltk
 transformers>3.0,<4.0
 allennlp==0.9.0
+plotly
+kaleido
